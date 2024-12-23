@@ -24,27 +24,28 @@ layout = dbc.Container(
             )
         ),
         dbc.Row(
-            dcc.Graph(id='supply-demand-graph')
+            dbc.Col(dcc.Graph(id='supply-demand-graph'), width=11)
         ), 
         dbc.Row(
             [
                 dbc.Col(
                     html.Div([
                         html.Label("Adjust Demand Curve Intercept (a):"),
-                        dcc.Slider(id='demand-intercept-slider', min=0, max=100, value=80, marks={i: str(i) for i in range(0, 101, 10)}),
+                        dcc.Slider(id='demand-intercept-slider', min=50, max=100, value=80, marks={i: str(i) for i in range(50, 101, 10)}),
                         
                         html.Label("Adjust Demand Curve Slope (b):"),
                         dcc.Slider(id='demand-slope-slider', min=-5, max=-0.1, value=-0.5, step=0.1, marks={i: str(i) for i in range(-5, 1, 1)}),
                         
                         html.Label("Adjust Supply Curve Intercept (c):"),
-                        dcc.Slider(id='supply-intercept-slider', min=0, max=100, value=10, marks={i: str(i) for i in range(0, 101, 10)}),
+                        dcc.Slider(id='supply-intercept-slider', min=0, max=50, value=10, marks={i: str(i) for i in range(0, 51, 10)}),
                         
                         html.Label("Adjust Supply Curve Slope (d):"),
                         dcc.Slider(id='supply-slope-slider', min=0.1, max=5, value=0.5, step=0.1, marks={i: str(i) for i in range(1, 6, 1)}),
                     ]), 
-                    width=7, 
+                    width=5, 
                     style={'margin-right': '30px'}
                 ), 
+                dbc.Col([], width=1),
                 dbc.Col(
                     html.Div([
                         html.Ul([
@@ -56,7 +57,7 @@ layout = dbc.Container(
                             html.Li(dcc.Markdown(id='producer-surplus', mathjax=True))
                         ])
                     ]), 
-                    width=4
+                    width=5
                 )
             ]
         )

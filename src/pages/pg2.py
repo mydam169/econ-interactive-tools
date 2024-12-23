@@ -38,6 +38,19 @@ layout = html.Div([
             html.H5('Impact of the tax on welfare and market outcomes'),
             dash_table.DataTable(
                 id='comparison-df',
+                style_cell_conditional=[
+                    {
+                        'if': {'column_id': 'Metric'}, 
+                        'textAlign': 'left'
+                    }
+                ], 
+                style_header={
+                    'backgroundColor': '#3366ff', 
+                    'fontWeight': 'bold', 
+                    'color': 'white'
+                }, 
+                style_cell={'fontFamily': 'Arial'}, 
+                style_as_list_view=True
                 # columns=[],
                 # data=[]
             ),

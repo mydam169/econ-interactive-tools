@@ -2,9 +2,9 @@ import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
-load_figure_template('LUX')
+load_figure_template('ZEPHYR')
 
-app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.LUX])
+app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.ZEPHYR])
 server = app.server
 
 sidebar = dbc.Nav(
@@ -20,6 +20,7 @@ sidebar = dbc.Nav(
             ],
             vertical=True,
             pills=True,
+            style={'background-color': '#003366', 'color': 'white'},
             className="bg-light",
 )
 
@@ -50,4 +51,4 @@ app.layout = dbc.Container([
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)

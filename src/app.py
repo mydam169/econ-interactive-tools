@@ -5,6 +5,8 @@ from dash_bootstrap_templates import load_figure_template
 load_figure_template('LUX')
 
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.LUX])
+server = app.server
+
 sidebar = dbc.Nav(
             [
                 dbc.NavLink(

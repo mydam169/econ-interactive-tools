@@ -20,7 +20,7 @@ sidebar = dbc.Nav(
             ],
             vertical=True,
             pills=True,
-            style={'background-color': '#003366', 'color': 'white'},
+            # style={'background-color': '#003366', 'color': 'white'},
             className="bg-light",
 )
 

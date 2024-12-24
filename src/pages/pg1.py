@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objects as go 
 import numpy as np
 from .markdown_texts import intro_md
+from .appModules import *
 
 dash.register_page(__name__, path='/', name='Supply and demand')
 
@@ -80,23 +81,26 @@ layout = dbc.Container(
 )
 
 def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope):
+    # instantiate a linear demand and supply model
+    mod = LinearDSModel(demand_intercept, demand_slope, supply_intercept, supply_slope)
+
     demand_eqn = f'Demand equation: $P = {demand_intercept} - {-demand_slope}Q$'
     supply_eqn = f'Supply equation: $P = {supply_intercept} + {supply_slope}Q$'
     quantity = np.linspace(0, 100, 100)
 
     ############### EQM outcomes ##################
-    eqm_qty = (supply_intercept - demand_intercept) / (demand_slope - supply_slope)
-    eqm_price = demand_intercept + demand_slope * eqm_qty
-    consumer_surplus = 0.5 * (demand_intercept - eqm_price) * eqm_qty
-    producer_surplus = 0.5 * (eqm_price - supply_intercept) * eqm_qty
+    eqm_qty = mod.q_star
+    eqm_price = mod.p_star
+    consumer_surplus = mod.get_CS(eqm_qty, eqm_price)
+    producer_surplus = mod.get_PS(eqm_qty, eqm_price)
     Q_star = f'Equilibrium quantity: $Q^* = {round(eqm_qty, 2)}$'
     P_star = f'Equilibrium price: $P^* = {round(eqm_price, 2)}$'
     CS_star = f'Consumer surplus: $SC = {round(consumer_surplus, 2)}$'
     PS_star = f'Producer surplus: $PS = {round(producer_surplus, 2)}$'
 
     ############## GRAPH ##########################
-    demand = demand_intercept + demand_slope * quantity 
-    supply = supply_intercept + supply_slope * quantity
+    demand = mod.get_P_demand(quantity)
+    supply = mod.get_P_supply(quantity)
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(x=quantity, y=demand, mode='lines', name='Demand', line=dict(color='blue'))

@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
+from .appModules import *
 
 
 dash.register_page(__name__, name='Tax and welfare')
@@ -77,38 +78,23 @@ layout = html.Div([
     Input('tax-slider', 'value')]
 )
 def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope, tax):
+    # instantiate a linear DS model with tax
+    mod = TaxModel(demand_intercept, demand_slope, supply_intercept, supply_slope, tax)
     # Generate data for demand and supply curves
     quantity = np.linspace(0, 100, 100)
-    demand = demand_intercept + demand_slope * quantity  # Demand curve: P = a + bQ
-    supply = supply_intercept + supply_slope * quantity  # Supply curve: P = c + dQ
+    demand = mod.get_P_demand(quantity)
+    supply = mod.get_P_supply(quantity)
 
-    # Calculate equilibrium price and quantity
-    equilibrium_quantity = (supply_intercept - demand_intercept) / (demand_slope - supply_slope)
-    equilibrium_price = demand_intercept + demand_slope * equilibrium_quantity
+    # eqm surpluses
+    pre_cs = mod.get_CS(mod.p_star, mod.q_star)
+    pre_ps = mod.get_PS(mod.p_star, mod.q_star)
 
-    # Calculate new quantity after tax (supposed imposed on sellers)
-    new_supply_intercept = supply_intercept + tax  # Supply curve shifts up by tax amount
-    new_equilibrium_quantity = (new_supply_intercept - demand_intercept) / (demand_slope - supply_slope)
-    new_equilibrium_price = demand_intercept + demand_slope * new_equilibrium_quantity
-    # new prices
-    p_high = demand_intercept + demand_slope * new_equilibrium_quantity
-    p_low = supply_intercept + supply_slope * new_equilibrium_quantity
-    # Calculate deadweight loss (DWL)
-    deadweight_loss = 0.5 * tax * (equilibrium_quantity - new_equilibrium_quantity)
-
-    # CS, PS, Public Rev
-    pre_cs = 0.5 * (demand_intercept - equilibrium_price) * equilibrium_quantity
-    pre_ps = 0.5 * (equilibrium_price - supply_intercept) * equilibrium_quantity
-    gov_rev = tax * new_equilibrium_quantity
-    post_cs = 0.5 * (demand_intercept - p_high) * new_equilibrium_quantity
-    post_ps = 0.5 * (p_low - supply_intercept) * new_equilibrium_quantity
-    
     ########### DataTable to document impact of the tax ##########
     df = pd.DataFrame(
         {
             'Metric': ['Quantity', 'CS', 'PS', 'Tax revenu', 'DWL'],
-            'Before tax': np.array([equilibrium_quantity, pre_cs, pre_ps, 0., 0.]).round(2), 
-            'After tax': np.array([new_equilibrium_quantity, post_cs, post_ps, gov_rev, deadweight_loss]).round(2)
+            'Before tax': np.array([mod.q_star, pre_cs, pre_ps, 0., 0.]).round(2), 
+            'After tax': np.array([mod.q_star, mod.CS_T, mod.PS_T, mod.tax_rev, mod.DWL_T]).round(2)
         }
     )
 
@@ -117,8 +103,8 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
 
     # Shade the area representing deadweight loss
     fig.add_trace(go.Scatter(
-        x=[new_equilibrium_quantity, equilibrium_quantity, new_equilibrium_quantity],
-        y=[new_equilibrium_price, equilibrium_price, new_equilibrium_price - tax],
+        x=[mod.q_T, mod.q_star, mod.q_T],
+        y=[mod.P_d, mod.p_star, mod.P_s],
         fill='toself',
         fillcolor='rgba(211, 211, 211, 1)',  # Light gray color for deadweight loss
         line=dict(color='rgba(255, 255, 255, 0)'),
@@ -127,8 +113,8 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
 
     # Shade the area representing consumer surplus
     fig.add_trace(go.Scatter(
-        x=[0, new_equilibrium_quantity, 0],
-        y=[demand_intercept, new_equilibrium_price, new_equilibrium_price],
+        x=[0, mod.q_T, 0],
+        y=[demand_intercept, mod.P_d, mod.P_d],
         fill='toself',
         fillcolor='rgba(0, 0, 255, 0.2)',  # Light blue color for consumer surplus
         line=dict(color='rgba(255, 255, 255, 0)'),
@@ -137,8 +123,8 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
 
     # Shade the area representing producer surplus
     fig.add_trace(go.Scatter(
-        x=[0, new_equilibrium_quantity, 0],
-        y=[new_equilibrium_price - tax, new_equilibrium_price - tax, supply_intercept],
+        x=[0, mod.q_T, 0],
+        y=[mod.P_s, mod.P_s, supply_intercept],
         fill='toself',
         fillcolor='rgba(255, 0, 0, 0.2)',  # Light red color for producer surplus
         line=dict(color='rgba(255, 255, 255, 0)'),
@@ -150,8 +136,8 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
     fig.add_trace(go.Scatter(x=quantity, y=supply, mode='lines', name='Supply Curve', line=dict(color='red')))
     
     # Add initial equilibrium point
-    fig.add_trace(go.Scatter(x=[equilibrium_quantity], 
-                             y=[equilibrium_price], 
+    fig.add_trace(go.Scatter(x=[mod.q_star], 
+                             y=[mod.p_star], 
                              mode='markers', 
                              name='Initial Equilibrium', 
                              marker=dict(color='green', size=15)))
@@ -161,16 +147,16 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
 
     # Add dashed lines for initial equilibrium price and quantity
     fig.add_trace(go.Scatter(
-        x=[equilibrium_quantity, equilibrium_quantity],
-        y=[0, equilibrium_price],
+        x=[mod.q_star, mod.q_star],
+        y=[0, mod.p_star],
         mode='lines',
         line=dict(color='black', dash='dot'),
         showlegend=False
     ))
 
     fig.add_trace(go.Scatter(
-        x=[0, equilibrium_quantity],
-        y=[equilibrium_price, equilibrium_price],
+        x=[0, mod.q_star],
+        y=[mod.p_star, mod.p_star],
         mode='lines',
         line=dict(color='black', dash='dot'),
         showlegend=False

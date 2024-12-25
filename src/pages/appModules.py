@@ -112,9 +112,9 @@ class TaxModel(LinearDSModel):
         return self.get_PS(self.q_T, self.P_s)
         
 class PriceFloor(LinearDSModel):
-    def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, floor):
+    def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, floor_percent):
         super().__init__(demand_intercept, demand_slope, supply_intercept, supply_slope)
-        self.p_min = floor
+        self.p_min = self.p_star * (1 + floor_percent)
 
     def get_price_floor(self):
         return self.p_min
@@ -144,8 +144,9 @@ class PriceFloor(LinearDSModel):
 
 class PriceCeiling(LinearDSModel):
     def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, ceiling):
+        "ceiling as a percent of the equilibrium price"
         super().__init__(demand_intercept, demand_slope, supply_intercept, supply_slope)
-        self.p_max = ceiling
+        self.p_max = ceiling * self.p_star
 
     def get_price_floor(self):
         return self.p_min

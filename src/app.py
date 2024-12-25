@@ -4,7 +4,8 @@ import dash_bootstrap_components as dbc
 from dash_bootstrap_templates import load_figure_template
 load_figure_template('ZEPHYR')
 
-app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.ZEPHYR])
+app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.ZEPHYR], 
+                suppress_callback_exceptions=True)
 server = app.server
 
 sidebar = dbc.Nav(
@@ -37,7 +38,7 @@ app.layout = dbc.Container([
         [
             dbc.Col(
                 [
-                    html.H4('Contents'),
+                    html.H4('Topics'),
                     sidebar
                 ], xs=4, sm=4, md=2, lg=2, xl=2, xxl=2),
 

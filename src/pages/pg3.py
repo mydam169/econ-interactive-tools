@@ -10,15 +10,15 @@ from .appModules import *
 dash.register_page(__name__, name='Price Floor and Ceiling')
 
 layout = html.Div([
-    html.H2("Price floor, welfare and market outcomes"),
+    html.H2("Price fixing, welfare and market outcomes"),
 
     dbc.Row([
         dbc.Col([dcc.Graph(id='price-floor-graph'), 
                  html.Label("Adjust price floor (percent above equilibrium price)"), 
-                 dcc.Slider(id='price-floor-slider', min=0, max=0.4, value=0.1, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5), 
+                 dcc.Slider(id='price-floor-slider', min=0, max=0.4, value=0.2, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5), 
         dbc.Col([dcc.Graph(id='price-ceiling-graph'), 
                  html.Label("Adjust price ceiling (percent of equilibrium price)"),
-                 dcc.Slider(id='price-ceiling-slider', min=0, max=1, value=0.95, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5)
+                 dcc.Slider(id='price-ceiling-slider', min=0, max=1, value=0.7, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5)
         ]),
     dbc.Row([
         dbc.Col([
@@ -82,8 +82,8 @@ def update_graph_floor(floor_percent):
     supply = mod.get_P_supply(quantity)
 
     # eqm surpluses
-    pre_cs = mod.get_CS(mod.p_star, mod.q_star)
-    pre_ps = mod.get_PS(mod.p_star, mod.q_star)
+    pre_cs = mod.get_CS(mod.q_star, mod.p_star)
+    pre_ps = mod.get_PS(mod.q_star, mod.p_star)
 
     ########### DataTable to document impact of the price  floor ##########
     df = pd.DataFrame(
@@ -129,38 +129,57 @@ def update_graph_floor(floor_percent):
     ))
 
     # Add supply, demand lines
-    fig.add_trace(go.Scatter(x=quantity, y=demand, mode='lines', name='Demand Curve', line=dict(color='blue')))
-    fig.add_trace(go.Scatter(x=quantity, y=supply, mode='lines', name='Supply Curve', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=quantity, 
+                             y=demand, 
+                             mode='lines', 
+                             name='Demand Curve', 
+                             line=dict(color='blue'), 
+                             showlegend=False)
+                            )
+    fig.add_trace(go.Scatter(x=quantity, 
+                             y=supply, 
+                             mode='lines', 
+                             name='Supply Curve', 
+                             line=dict(color='red'), 
+                             showlegend=False)
+                            )
     
     # Add initial equilibrium point
     fig.add_trace(go.Scatter(x=[mod.q_star], 
                              y=[mod.p_star], 
                              mode='markers', 
                              name='Initial Equilibrium', 
-                             marker=dict(color='green', size=15)))
+                             marker=dict(color='green', size=15))
+                            )
 
-    # Add new equilibrium point after tax
-    # fig.add_trace(go.Scatter(x=[new_equilibrium_quantity], y=[new_equilibrium_price], mode='markers', name='New Equilibrium', marker=dict(color='orange', size=10)))
 
     # Add dashed lines for initial equilibrium price and quantity
-    fig.add_trace(go.Scatter(
-        x=[mod.q_star, mod.q_star],
-        y=[0, mod.p_star],
-        mode='lines',
-        line=dict(color='black', dash='dot'),
-        showlegend=False
-    ))
+    # fig.add_trace(go.Scatter(
+    #     x=[mod.q_star, mod.q_star],
+    #     y=[0, mod.p_star],
+    #     mode='lines',
+    #     line=dict(color='black', dash='dot'),
+    #     showlegend=False
+    # ))
 
-    fig.add_trace(go.Scatter(
-        x=[0, mod.q_star],
-        y=[mod.p_star, mod.p_star],
-        mode='lines',
-        line=dict(color='black', dash='dot'),
-        showlegend=False
-    ))
+    # fig.add_trace(go.Scatter(
+    #     x=[0, mod.q_star],
+    #     y=[mod.p_star, mod.p_star],
+    #     mode='lines',
+    #     line=dict(color='black', dash='dot'),
+    #     showlegend=False
+    # ))
+
+    # Add price floor line
+    fig.add_trace(
+        go.Scatter(x=quantity, y=np.ones(len(quantity))*mod.p_min, 
+                   mode='lines', 
+                   name='Price floor', 
+                   line=dict(color='black'))
+    )
 
     # Update layout
-    fig.update_layout(title='', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
+    fig.update_layout(title='Price floor', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
     
     return fig, df.to_dict('records')
 
@@ -179,8 +198,8 @@ def update_graph_ceiling(ceiling):
     supply = mod.get_P_supply(quantity)
 
     # eqm surpluses
-    pre_cs = mod.get_CS(mod.p_star, mod.q_star)
-    pre_ps = mod.get_PS(mod.p_star, mod.q_star)
+    pre_cs = mod.get_CS(mod.q_star, mod.p_star)
+    pre_ps = mod.get_PS(mod.q_star, mod.p_star)
 
     ########### DataTable to document impact of the price  floor ##########
     df = pd.DataFrame(
@@ -226,38 +245,61 @@ def update_graph_ceiling(ceiling):
     ))
 
     # Add supply, demand lines
-    fig.add_trace(go.Scatter(x=quantity, y=demand, mode='lines', name='Demand Curve', line=dict(color='blue')))
-    fig.add_trace(go.Scatter(x=quantity, y=supply, mode='lines', name='Supply Curve', line=dict(color='red')))
+    fig.add_trace(go.Scatter(x=quantity, 
+                             y=demand, 
+                             mode='lines', 
+                             name='Demand Curve', 
+                             line=dict(color='blue'), 
+                             showlegend=False)
+                             )
+    fig.add_trace(go.Scatter(x=quantity, 
+                             y=supply, 
+                             mode='lines', 
+                             name='Supply Curve', 
+                             line=dict(color='red'), 
+                             showlegend=False)
+                             )
     
     # Add initial equilibrium point
     fig.add_trace(go.Scatter(x=[mod.q_star], 
                              y=[mod.p_star], 
                              mode='markers', 
                              name='Initial Equilibrium', 
-                             marker=dict(color='green', size=15)))
+                             marker=dict(color='green', size=15))
+                             )
+    
 
     # Add new equilibrium point after tax
     # fig.add_trace(go.Scatter(x=[new_equilibrium_quantity], y=[new_equilibrium_price], mode='markers', name='New Equilibrium', marker=dict(color='orange', size=10)))
 
     # Add dashed lines for initial equilibrium price and quantity
-    fig.add_trace(go.Scatter(
-        x=[mod.q_star, mod.q_star],
-        y=[0, mod.p_star],
-        mode='lines',
-        line=dict(color='black', dash='dot'),
-        showlegend=False
-    ))
+    # fig.add_trace(go.Scatter(
+    #     x=[mod.q_star, mod.q_star],
+    #     y=[0, mod.p_star],
+    #     mode='lines',
+    #     line=dict(color='black', dash='dot'),
+    #     showlegend=False
+    # ))
 
+    # fig.add_trace(go.Scatter(
+    #     x=[0, mod.q_star],
+    #     y=[mod.p_star, mod.p_star],
+    #     mode='lines',
+    #     line=dict(color='black', dash='dot'),
+    #     showlegend=False
+    # ))
+
+    # Add price ceiling line
     fig.add_trace(go.Scatter(
-        x=[0, mod.q_star],
-        y=[mod.p_star, mod.p_star],
-        mode='lines',
-        line=dict(color='black', dash='dot'),
-        showlegend=False
+        x=quantity, 
+        y=np.ones(len(quantity)) * mod.p_max, 
+        mode="lines", 
+        line=dict(color='gray'), 
+        name="Price ceiling"
     ))
 
     # Update layout
-    fig.update_layout(title='', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
+    fig.update_layout(title='Price ceiling', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
     
     return fig, df.to_dict('records')
 

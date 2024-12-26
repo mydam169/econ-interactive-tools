@@ -6,6 +6,11 @@ class LinearDSModel:
         Q_star = (a - c) / (d - b)
         P_star = a + b * Q_star
         '''
+        assert demand_intercept > 0, "The demand intercept must be positive"
+        assert demand_slope < 0, "The demand slope must be negative"
+        assert supply_intercept > 0, "The supply intercept must be positive"
+        assert demand_intercept > supply_intercept, "The supply intercept must be smaller than the demand intercept"
+        assert supply_slope > 0, "The supply slope must be positive"
         self.a = demand_intercept 
         self.b = demand_slope
         self.c = supply_intercept
@@ -34,12 +39,6 @@ class LinearDSModel:
 
     def get_supply_slope(self):
         return self.d
-
-    def get_Q_star(self):
-        return self.q_star
-    
-    def get_P_star(self):
-        return self.p_star
     
     def set_demand_intercept(self, demand_intercept):
         self.a = demand_intercept 
@@ -105,7 +104,8 @@ class TaxModel(LinearDSModel):
     
     @property
     def CS_T(self):
-        return self.get_CS(self.q_T, self.P_d)
+        return (self.a - self.P_d) * self.q_T * 0.5
+        # return self.get_CS(self.q_T, self.P_d)
     
     @property
     def PS_T(self):

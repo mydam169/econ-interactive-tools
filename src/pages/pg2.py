@@ -86,15 +86,15 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
     supply = mod.get_P_supply(quantity)
 
     # eqm surpluses
-    pre_cs = mod.get_CS(mod.p_star, mod.q_star)
-    pre_ps = mod.get_PS(mod.p_star, mod.q_star)
+    pre_cs = mod.get_CS(mod.q_star, mod.p_star)
+    pre_ps = mod.get_PS(mod.q_star, mod.p_star)
 
     ########### DataTable to document impact of the tax ##########
     df = pd.DataFrame(
         {
             'Metric': ['Quantity', 'CS', 'PS', 'Tax revenu', 'DWL'],
             'Before tax': np.array([mod.q_star, pre_cs, pre_ps, 0., 0.]).round(2), 
-            'After tax': np.array([mod.q_star, mod.CS_T, mod.PS_T, mod.tax_rev, mod.DWL_T]).round(2)
+            'After tax': np.array([mod.q_T, mod.CS_T, mod.PS_T, mod.tax_rev, mod.DWL_T]).round(2)
         }
     )
 

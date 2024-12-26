@@ -9,27 +9,17 @@ from .appModules import *
 
 dash.register_page(__name__, name='Price Floor and Ceiling')
 
-# app layout
-# Layout of the app
 layout = html.Div([
     html.H2("Price floor, welfare and market outcomes"),
 
     dbc.Row([
-        dbc.Col([dcc.Graph(id='price-floor-graph'), ], width=5), 
-        dbc.Col([], width=1),
-        dbc.Col([dcc.Graph(id='price-ceiling-graph')], width=5)
+        dbc.Col([dcc.Graph(id='price-floor-graph'), 
+                 html.Label("Adjust price floor (percent above equilibrium price)"), 
+                 dcc.Slider(id='price-floor-slider', min=0, max=0.4, value=0.1, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5), 
+        dbc.Col([dcc.Graph(id='price-ceiling-graph'), 
+                 html.Label("Adjust price ceiling (percent of equilibrium price)"),
+                 dcc.Slider(id='price-ceiling-slider', min=0, max=1, value=0.95, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5)
         ]),
-
-    dbc.Row([
-        dbc.Col([
-            html.Label("Adjust price floor (percent above market price):"),
-            dcc.Slider(id='price-floor-slider', min=0, max=1, value=0.1, marks={i / 10: str(i / 10) for i in range(0, 11)}),
-        ], width=5), 
-        dbc.Col([], width=1),
-        dbc.Col([
-            html.Label("Adjust price ceiling (percent below market price):"),
-            dcc.Slider(id='price-ceiling-slider', min=0, max=1, value=0.95, marks={i / 10: str(i / 10) for i in range(0, 11)}),
-        ], width=5)]), 
     dbc.Row([
         dbc.Col([
             html.H5('Impact of the price floor on welfare and market outcomes'),
@@ -270,3 +260,6 @@ def update_graph_ceiling(ceiling):
     fig.update_layout(title='', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
     
     return fig, df.to_dict('records')
+
+# if __name__ == "__main__":
+#   app.run_server(inline=True)

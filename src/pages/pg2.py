@@ -79,7 +79,9 @@ layout = html.Div([
 )
 def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope, tax):
     # instantiate a linear DS model with tax
-    mod = TaxModel(demand_intercept, demand_slope, supply_intercept, supply_slope, tax)
+    mod = TaxModel(demand_intercept, demand_slope, supply_intercept, supply_slope)
+    mod.tax_size = tax
+    
     # Generate data for demand and supply curves
     quantity = np.linspace(0, 100, 100)
     demand = mod.get_P_demand(quantity)

@@ -15,10 +15,10 @@ layout = html.Div([
     dbc.Row([
         dbc.Col([dcc.Graph(id='price-floor-graph'), 
                  html.Label("Adjust price floor (percent above equilibrium price)"), 
-                 dcc.Slider(id='price-floor-slider', min=0, max=0.4, value=0.2, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5), 
+                 dcc.Slider(id='price-floor-slider', min=0, max=0.5, value=0.2, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=6), 
         dbc.Col([dcc.Graph(id='price-ceiling-graph'), 
                  html.Label("Adjust price ceiling (percent of equilibrium price)"),
-                 dcc.Slider(id='price-ceiling-slider', min=0, max=1, value=0.7, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=5)
+                 dcc.Slider(id='price-ceiling-slider', min=0, max=1, value=0.7, marks={i / 10: f"{i * 10}%" for i in range(0, 11)})], width=6)
         ]),
     dbc.Row([
         dbc.Col([
@@ -39,7 +39,7 @@ layout = html.Div([
                 style_cell={'fontFamily': 'Arial'}, 
                 style_as_list_view=True
             )
-        ], width=5),
+        ], width=6),
         dbc.Col([
             html.H5('Impact of the price ceiling on welfare and market outcomes'),
             dash_table.DataTable(
@@ -58,7 +58,7 @@ layout = html.Div([
                 style_cell={'fontFamily': 'Arial'}, 
                 style_as_list_view=True
             )
-        ], width=5)
+        ], width=6)
     ])
 ])
 
@@ -75,7 +75,8 @@ demand_intercept, demand_slope, supply_intercept, supply_slope = 100, -1, 5, 2
 def update_graph_floor(floor_percent):
     "floor is percent above the equilibrium price"
     # instantiate a linear DS model with a price floor
-    mod = PriceFloor(demand_intercept, demand_slope, supply_intercept, supply_slope, floor_percent)
+    mod = PriceFloor(demand_intercept, demand_slope, supply_intercept, supply_slope)
+    mod.price_floor = floor_percent
     # Generate data for demand and supply curves
     quantity = np.linspace(0, 100, 100)
     demand = mod.get_P_demand(quantity)
@@ -191,7 +192,8 @@ def update_graph_floor(floor_percent):
 def update_graph_ceiling(ceiling):
     "floor is percent above the equilibrium price"
     # instantiate a linear DS model with a price floor
-    mod = PriceCeiling(demand_intercept, demand_slope, supply_intercept, supply_slope, ceiling)
+    mod = PriceCeiling(demand_intercept, demand_slope, supply_intercept, supply_slope)
+    mod.price_ceiling = ceiling
     # Generate data for demand and supply curves
     quantity = np.linspace(0, 100, 100)
     demand = mod.get_P_demand(quantity)

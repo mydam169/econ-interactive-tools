@@ -1,5 +1,5 @@
 class LinearDSModel:
-    def __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope):
+    def __init__(self, demand_intercept: float, demand_slope: float, supply_intercept: float, supply_slope: float):
         '''initiate a linear supply and demand model
         Demand: P = a + bQ (b < 0)
         Supply: P = c + dQ 
@@ -8,83 +8,108 @@ class LinearDSModel:
         '''
         assert demand_intercept > 0, "The demand intercept must be positive"
         assert demand_slope < 0, "The demand slope must be negative"
-        assert supply_intercept > 0, "The supply intercept must be positive"
-        assert demand_intercept > supply_intercept, "The supply intercept must be smaller than the demand intercept"
+        assert supply_intercept >= 0, "The supply intercept must be positive"
+        assert demand_intercept >= supply_intercept, "The supply intercept must be smaller than the demand intercept"
         assert supply_slope > 0, "The supply slope must be positive"
-        self.a = demand_intercept 
-        self.b = demand_slope
-        self.c = supply_intercept
-        self.d = supply_slope 
+        self._a = demand_intercept 
+        self._b = demand_slope
+        self._c = supply_intercept
+        self._d = supply_slope 
 
     @property
     def q_star(self):
-        return (self.a - self.c) / (self.d - self.b)
+        return (self._a - self._c) / (self._d - self._b)
     
     @property
     def p_star(self):
-        return self.a + self.b * self.q_star
+        return self._a + self._b * self.q_star
     
     @property
     def TS_star(self):
-        return (self.a - self.c) * self.q_star * 0.5
+        return (self._a - self._c) * self.q_star * 0.5
 
-    def get_demand_intercept(self):
-        return self.a
-
-    def get_supply_intercept(self):
-        return self.c 
-
-    def get_demand_slope(self):
-        return self.b
-
-    def get_supply_slope(self):
-        return self.d
+    @property
+    def demand_intercept(self):
+        return self._a
     
-    def set_demand_intercept(self, demand_intercept):
-        self.a = demand_intercept 
+    @demand_intercept.setter
+    def demand_intercept(self, value):
+        if value <= 0:
+            raise ValueError("Demand intercept must be positive")
+        self._a = value 
 
-    def set_supply_intercept(self, supply_intercept):
-        self.c = supply_intercept 
+    @property
+    def demand_slope(self):
+        return self._b
+    
+    @demand_slope.setter
+    def demand_slope(self, value):
+        if value >= 0:
+            raise ValueError("Demand slope must be negative")
+        self._b = value
+    
+    @property
+    def supply_intercept(self):
+        return self._c 
+    
+    @supply_intercept.setter 
+    def supply_intercept(self, value):
+        if value <= 0:
+            raise ValueError("Supply intercept must be positive")
+        if value >= self._a:
+            raise ValueError("Supply intercept must be less than demand intercept")
+        self._c = value
 
-    def set_demand_slope(self, demand_slope):
-        self.b = demand_slope
-
-    def set_supply_slope(self, supply_slope):
-        self.d = supply_slope
+    @property
+    def supply_slope(self):
+        return self._d
+    
+    @supply_slope.setter
+    def supply_slope(self, value):
+        if value <= 0:
+            raise ValueError("Supply slope must be positive")
+        self._d = value
 
     def get_P_demand(self, quantity):
-        return self.a + self.b * quantity
+        return self._a + self._b * quantity
     
     def get_P_supply(self, quantity):
-        return self.c + self.d * quantity 
+        return self._c + self._d * quantity 
     
     def get_Q_demand(self, price):
-        return (price - self.a) / self.b 
+        return (price - self._a) / self._b 
     
     def get_Q_supply(self, price):
-        return (price - self.c) / self.d
+        return (price - self._c) / self._d
     
     def get_CS(self, quantity_bought, price_paid):
-        return 0.5 * (self.a - price_paid) * quantity_bought
+        return 0.5 * (self._a - price_paid) * quantity_bought
     
     def get_PS(self, quantity_sold, price_received):
-        return 0.5 * (price_received - self.c) * quantity_sold
+        return 0.5 * (price_received - self._c) * quantity_sold
+    
     
 
 class TaxModel(LinearDSModel):
-    def __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, tax_size):
+    def __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, tax_size=None):
         super().__init__(demand_intercept, demand_slope, supply_intercept, supply_slope)
         self.tax = tax_size
-
-    def get_tax_size(self):
-        return self.tax 
     
-    def set_tax_size(self, new_tax):
-        self.tax = new_tax
+    @property
+    def tax_size(self):
+        return self.tax
+    
+    @tax_size.setter 
+    def tax_size(self, value):
+        # if value >= self._a - self._c:
+        #     self.tax = self._a - self._c 
+        # else:
+        #     self.tax = value
+        self.tax = min(value, self._a - self._c)
 
     @property
     def q_T(self):
-        return (self.a - self.c - self.tax) / (self.d - self.b)
+        return (self._a - self._c - self.tax) / (self._d - self._b)
     
     @property
     def P_d(self):
@@ -104,27 +129,31 @@ class TaxModel(LinearDSModel):
     
     @property
     def CS_T(self):
-        return (self.a - self.P_d) * self.q_T * 0.5
-        # return self.get_CS(self.q_T, self.P_d)
+        return (self._a - self.P_d) * self.q_T * 0.5
     
     @property
     def PS_T(self):
         return self.get_PS(self.q_T, self.P_s)
         
 class PriceFloor(LinearDSModel):
-    def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, floor):
+    def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, floor=None):
         super().__init__(demand_intercept, demand_slope, supply_intercept, supply_slope)
-        self.p_min = (1 + floor) * self.p_star
+        # self.p_min = (1 + floor) * self.p_star
 
-    def get_price_floor(self):
+    @property
+    def price_floor(self):
         return self.p_min
     
-    def set_price_foor(self, price_floor):
-        self.p_min = price_floor
+    @price_floor.setter
+    def price_floor(self, markup):
+        # price floor cannot exceed demand intercept
+        # self.p_min = min(self._a, (1 + markup) * self.p_star)
+        self.p_min = (1 + markup) * self.p_star
+
 
     @property 
     def q_floor(self):
-        return self.get_Q_demand(self.p_min)
+        return max(self.get_Q_demand(self.p_min), 0)
     
     @property
     def q_excess(self):
@@ -132,7 +161,8 @@ class PriceFloor(LinearDSModel):
     
     @property
     def DWL_floor(self):
-        return 0.5 * (self.p_min - self.get_P_supply(self.q_floor)) * (self.q_star - self.q_floor)
+        return min(0.5 * (self.p_min - self.get_P_supply(self.q_floor)) * (self.q_star - self.q_floor), 
+                   self.TS_star)
     
     @property
     def CS_floor(self):
@@ -143,19 +173,24 @@ class PriceFloor(LinearDSModel):
         return self.TS_star - self.CS_floor - self.DWL_floor
 
 class PriceCeiling(LinearDSModel):
-    def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, ceiling):
+    def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, ceiling=None):
         super().__init__(demand_intercept, demand_slope, supply_intercept, supply_slope)
-        self.p_max = ceiling * self.p_star
+        # self.p_max = ceiling * self.p_star
 
-    def get_price_ceiling(self):
-        return self.p_max
+    @property 
+    def price_ceiling(self):
+        return self.p_max 
     
-    def set_price_ceiling(self, price_ceiling):
-        self.p_max = price_ceiling
+    @price_ceiling.setter 
+    def price_ceiling(self, ceiling_percent):
+        if ceiling_percent > 1:
+            raise ValueError("Must be a value between zero and one")
+        self.p_max = self.p_star * ceiling_percent
+
 
     @property
     def q_ceiling(self):
-        return self.get_Q_supply(self.p_max)
+        return max(self.get_Q_supply(self.p_max), 0)
 
     @property
     def q_shortage(self):
@@ -163,7 +198,8 @@ class PriceCeiling(LinearDSModel):
 
     @property
     def DWL_ceiling(self):
-        return 0.5 * (self.get_P_demand(self.q_ceiling) - self.p_max) * (self.q_star - self.q_ceiling)
+        return min(0.5 * (self.get_P_demand(self.q_ceiling) - self.p_max) * (self.q_star - self.q_ceiling), 
+                   self.TS_star)
 
     @property
     def PS_ceiling(self):

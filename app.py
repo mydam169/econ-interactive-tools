@@ -6,6 +6,7 @@ load_figure_template('ZEPHYR')
 
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.ZEPHYR], 
                 suppress_callback_exceptions=True)
+
 server = app.server
 
 sidebar = dbc.Nav(
@@ -52,4 +53,4 @@ app.layout = dbc.Container([
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True, port=8050)

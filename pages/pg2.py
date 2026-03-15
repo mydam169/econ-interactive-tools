@@ -8,7 +8,7 @@ import pandas as pd
 from .appModules import *
 
 
-dash.register_page(__name__, name='Tax and welfare')
+dash.register_page(__name__, name='Tax and welfare', path="/tax-welfare")
 
 # Layout of the app
 layout = html.Div([

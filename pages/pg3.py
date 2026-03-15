@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd 
 from .appModules import *
 
-dash.register_page(__name__, name='Price Floor and Ceiling')
+dash.register_page(__name__, path="/price-floor-ceiling", name="Price floor and ceiling")
 
 layout = html.Div([
     html.H2("Price fixing, welfare and market outcomes"),

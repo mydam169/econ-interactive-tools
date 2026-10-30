@@ -83,7 +83,7 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
     ########### DataTable to document impact of the tax ##########
     df = pd.DataFrame(
         {
-            'Metric': ['Quantity', 'CS', 'PS', 'Tax revenu', 'DWL'],
+            'Metric': ['Quantity', 'CS', 'PS', 'Tax revenue', 'DWL'],
             'Before tax': np.array([mod.q_star, pre_cs, pre_ps, 0., 0.]).round(2), 
             'After tax': np.array([mod.q_T, mod.CS_T, mod.PS_T, mod.tax_rev, mod.DWL_T]).round(2)
         }

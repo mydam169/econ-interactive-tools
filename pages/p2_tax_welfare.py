@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import numpy as np
 import pandas as pd
 from .appModules import *
+from .theme import *
 
 
 dash.register_page(__name__, name='Tax and welfare', path="/tax-welfare")
@@ -39,19 +40,7 @@ layout = html.Div([
             html.H5('Impact of the tax on welfare and market outcomes'),
             dash_table.DataTable(
                 id='comparison-df',
-                style_cell_conditional=[
-                    {
-                        'if': {'column_id': 'Metric'}, 
-                        'textAlign': 'left'
-                    }
-                ], 
-                style_header={
-                    'backgroundColor': '#3366ff', 
-                    'fontWeight': 'bold', 
-                    'color': 'white'
-                }, 
-                style_cell={'fontFamily': 'Arial'}, 
-                style_as_list_view=True
+                **TABLE_STYLE
                 # columns=[],
                 # data=[]
             ),
@@ -107,42 +96,40 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
     fig.add_trace(go.Scatter(
         x=[mod.q_T, mod.q_star, mod.q_T],
         y=[mod.P_d, mod.p_star, mod.P_s],
-        fill='toself',
-        fillcolor='rgba(211, 211, 211, 1)',  # Light gray color for deadweight loss
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Deadweight Loss'
+        **area('Deadweight Loss', mod.DWL_T, DWL_FILL)
     ))
 
     # Shade the area representing consumer surplus
     fig.add_trace(go.Scatter(
         x=[0, mod.q_T, 0],
         y=[demand_intercept, mod.P_d, mod.P_d],
-        fill='toself',
-        fillcolor='rgba(0, 0, 255, 0.2)',  # Light blue color for consumer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Consumer Surplus'
+        **area('Consumer Surplus', mod.CS_T, CS_FILL)
     ))
 
     # Shade the area representing producer surplus
     fig.add_trace(go.Scatter(
         x=[0, mod.q_T, 0],
         y=[mod.P_s, mod.P_s, supply_intercept],
-        fill='toself',
-        fillcolor='rgba(255, 0, 0, 0.2)',  # Light red color for producer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Producer Surplus'
+        **area('Producer Surplus', mod.PS_T, PS_FILL)
+    ))
+
+    # Shade the area representing tax revenue
+    fig.add_trace(go.Scatter(
+        x=[0, mod.q_T, mod.q_T, 0],
+        y=[mod.P_d, mod.P_d, mod.P_s, mod.P_s],
+        **area('Tax Revenue', mod.tax_rev, TAX_FILL)
     ))
 
     # Add supply, demand lines
-    fig.add_trace(go.Scatter(x=quantity, y=demand, mode='lines', name='Demand Curve', line=dict(color='blue')))
-    fig.add_trace(go.Scatter(x=quantity, y=supply, mode='lines', name='Supply Curve', line=dict(color='red')))
-    
+    fig.add_trace(go.Scatter(x=quantity, y=demand, mode='lines', name='Demand Curve', line=DEMAND_LINE))
+    fig.add_trace(go.Scatter(x=quantity, y=supply, mode='lines', name='Supply Curve', line=SUPPLY_LINE))
+
     # Add initial equilibrium point
-    fig.add_trace(go.Scatter(x=[mod.q_star], 
-                             y=[mod.p_star], 
-                             mode='markers', 
-                             name='Initial Equilibrium', 
-                             marker=dict(color='green', size=15)))
+    fig.add_trace(go.Scatter(x=[mod.q_star],
+                             y=[mod.p_star],
+                             mode='markers',
+                             name='Initial Equilibrium',
+                             marker=EQM_MARKER))
 
     # Add new equilibrium point after tax
     # fig.add_trace(go.Scatter(x=[new_equilibrium_quantity], y=[new_equilibrium_price], mode='markers', name='New Equilibrium', marker=dict(color='orange', size=10)))
@@ -152,7 +139,7 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
         x=[mod.q_star, mod.q_star],
         y=[0, mod.p_star],
         mode='lines',
-        line=dict(color='black', dash='dot'),
+        line=GUIDE_LINE,
         showlegend=False
     ))
 
@@ -160,7 +147,7 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope,
         x=[0, mod.q_star],
         y=[mod.p_star, mod.p_star],
         mode='lines',
-        line=dict(color='black', dash='dot'),
+        line=GUIDE_LINE,
         showlegend=False
     ))
 

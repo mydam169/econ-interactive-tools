@@ -1,10 +1,10 @@
 import dash
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-from dash_bootstrap_templates import load_figure_template
-load_figure_template('ZEPHYR')
 
-app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.ZEPHYR], 
+FONTS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+
+app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.FLATLY, FONTS],
                 suppress_callback_exceptions=True)
 
 server = app.server
@@ -12,34 +12,29 @@ server = app.server
 sidebar = dbc.Nav(
             [
                 dbc.NavLink(
-                    [
-                        html.Div(page["name"], className="ms-2"),
-                    ],
+                    page["name"],
                     href=page["path"],
                     active="exact",
                 )
                 for page in dash.page_registry.values()
             ],
             vertical=True,
-            pills=True,
-            # style={'background-color': '#003366', 'color': 'white'},
-            className="bg-light",
+            className="sidebar",
 )
 
-app.layout = dbc.Container([
-    dbc.Row([
-        dbc.Col(width=2),
-        dbc.Col(html.Div("Interactive tools for introductory economics",
-                         style={'fontSize':45, 'textAlign':'left'}))
-    ]),
+header = html.Div([
+    html.Div("Interactive tools for introductory economics", className="app-title"),
+    html.Div("Supply, demand and the welfare effects of market interventions", className="app-subtitle"),
+], className="app-header")
 
-    html.Hr(),
+app.layout = dbc.Container([
+    header,
 
     dbc.Row(
         [
             dbc.Col(
                 [
-                    html.H4('Topics'),
+                    html.Div('Topics', className="sidebar-heading"),
                     sidebar
                 ], xs=4, sm=4, md=2, lg=2, xl=2, xxl=2),
 

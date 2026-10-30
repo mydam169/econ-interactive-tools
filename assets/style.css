@@ -1,0 +1,98 @@
+/* Loaded automatically by Dash from the assets/ folder */
+:root {
+    --navy: #0B2545;
+    --navy-hover: #13315C;
+    --page-bg: #F7F8FA;
+    --text: #1F2933;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+
+    /* Dash 4 component colors (sliders, inputs) */
+    --Dash-Fill-Interactive-Strong: var(--navy);
+    --Dash-Fill-Primary-Hover: var(--navy-hover);
+    --Dash-Fill-Primary-Active: var(--navy);
+    --Dash-Text-Primary: var(--navy);
+}
+
+body {
+    background-color: var(--page-bg);
+    color: var(--text);
+    font-family: Inter, 'Segoe UI', Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5 {
+    color: var(--navy);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+h5 { font-size: 1rem; margin-top: 1rem; }
+
+label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-top: 0.75rem;
+}
+
+/* Top header band */
+.app-header {
+    background-color: var(--navy);
+    color: white;
+    padding: 0.9rem 1.5rem;
+    margin: 0 -12px 1.5rem;
+}
+
+.app-header .app-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.app-header .app-subtitle {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Sidebar */
+.sidebar-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+
+.sidebar .nav-link {
+    color: var(--text);
+    border-left: 3px solid transparent;
+    border-radius: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.925rem;
+}
+
+.sidebar .nav-link:hover {
+    background-color: white;
+    color: var(--navy);
+}
+
+.sidebar .nav-link.active {
+    background-color: white;
+    color: var(--navy);
+    border-left-color: var(--navy);
+    font-weight: 600;
+}
+
+/* Charts sit on white cards. Use box-shadow, not border: Plotly measures this
+   element to size the chart, and a border sends it into a resize loop. */
+.js-plotly-plot {
+    box-shadow: 0 0 0 1px var(--border);
+}
+
+.dash-table-container {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}

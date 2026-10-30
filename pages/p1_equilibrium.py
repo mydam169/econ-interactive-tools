@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 import numpy as np
 from .markdown_texts import intro_md
 from .appModules import *
+from .theme import *
 
 dash.register_page(__name__, path='/', name='Supply and demand')
 
@@ -103,33 +104,27 @@ def update_graph(demand_intercept, demand_slope, supply_intercept, supply_slope)
     supply = mod.get_P_supply(quantity)
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(x=quantity, y=demand, mode='lines', name='Demand', line=dict(color='blue'))
+        go.Scatter(x=quantity, y=demand, mode='lines', name='Demand', line=DEMAND_LINE)
     )
     fig.add_trace(
-        go.Scatter(x=quantity, y=supply, mode='lines', name='Supply', line=dict(color='red'))
+        go.Scatter(x=quantity, y=supply, mode='lines', name='Supply', line=SUPPLY_LINE)
     )
 
     # Add equilibrium point
-    fig.add_trace(go.Scatter(x=[eqm_qty], y=[eqm_price], mode='markers', name='Equilibrium', marker=dict(color='green', size=15)))
+    fig.add_trace(go.Scatter(x=[eqm_qty], y=[eqm_price], mode='markers', name='Equilibrium', marker=EQM_MARKER))
 
     # Shade the area representing consumer surplus
     fig.add_trace(go.Scatter(
         x=[0, eqm_qty, 0],
         y=[demand_intercept, eqm_price, eqm_price],
-        fill='toself',
-        fillcolor='rgba(0, 0, 255, 0.2)',  # Light blue color for consumer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Consumer Surplus'
+        **area('Consumer Surplus', consumer_surplus, CS_FILL)
     ))
 
     # Shade the area representing producer surplus
     fig.add_trace(go.Scatter(
         x=[0, eqm_qty, 0],
         y=[eqm_price, eqm_price, supply_intercept],
-        fill='toself',
-        fillcolor='rgba(255, 0, 0, 0.2)',  # Light red color for producer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Producer Surplus'
+        **area('Producer Surplus', producer_surplus, PS_FILL)
     ))
 
     # Update layout

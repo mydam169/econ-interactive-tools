@@ -6,6 +6,7 @@ import plotly.graph_objects as  go
 import numpy as np 
 import pandas as pd 
 from .appModules import *
+from .theme import *
 
 dash.register_page(__name__, path="/price-floor-ceiling", name="Price floor and ceiling")
 
@@ -25,38 +26,14 @@ layout = html.Div([
             html.H5('Impact of the price floor on welfare and market outcomes'),
             dash_table.DataTable(
                 id='df-floor',
-                style_cell_conditional=[
-                    {
-                        'if': {'column_id': 'Metric'}, 
-                        'textAlign': 'left'
-                    }
-                ], 
-                style_header={
-                    'backgroundColor': '#3366ff', 
-                    'fontWeight': 'bold', 
-                    'color': 'white'
-                }, 
-                style_cell={'fontFamily': 'Arial'}, 
-                style_as_list_view=True
+                **TABLE_STYLE
             )
         ], width=6),
         dbc.Col([
             html.H5('Impact of the price ceiling on welfare and market outcomes'),
             dash_table.DataTable(
                 id='df-ceiling',
-                style_cell_conditional=[
-                    {
-                        'if': {'column_id': 'Metric'}, 
-                        'textAlign': 'left'
-                    }
-                ], 
-                style_header={
-                    'backgroundColor': '#3366ff', 
-                    'fontWeight': 'bold', 
-                    'color': 'white'
-                }, 
-                style_cell={'fontFamily': 'Arial'}, 
-                style_as_list_view=True
+                **TABLE_STYLE
             )
         ], width=6)
     ])
@@ -103,30 +80,21 @@ def update_graph_floor(floor_percent):
     fig.add_trace(go.Scatter(
         x=[mod.q_floor, mod.q_star, mod.q_floor],
         y=[mod.p_min, mod.p_star, P_s],
-        fill='toself',
-        fillcolor='rgba(211, 211, 211, 1)',  # Light gray color for deadweight loss
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Deadweight Loss'
+        **area('Deadweight Loss', mod.DWL_floor, DWL_FILL)
     ))
 
     # Shade the area representing consumer surplus
     fig.add_trace(go.Scatter(
         x=[0, mod.q_floor, 0],
         y=[demand_intercept, mod.p_min, mod.p_min],
-        fill='toself',
-        fillcolor='rgba(0, 0, 255, 0.2)',  # Light blue color for consumer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Consumer Surplus'
+        **area('Consumer Surplus', mod.CS_floor, CS_FILL)
     ))
 
     # Shade the area representing producer surplus
     fig.add_trace(go.Scatter(
         x=[0, mod.q_floor, mod.q_floor, 0],
         y=[mod.p_min, mod.p_min, P_s, supply_intercept],
-        fill='toself',
-        fillcolor='rgba(255, 0, 0, 0.2)',  # Light red color for producer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Producer Surplus'
+        **area('Producer Surplus', mod.PS_floor, PS_FILL)
     ))
 
     # Add supply, demand lines
@@ -134,14 +102,14 @@ def update_graph_floor(floor_percent):
                              y=demand, 
                              mode='lines', 
                              name='Demand Curve', 
-                             line=dict(color='blue'), 
+                             line=DEMAND_LINE,
                              showlegend=False)
                             )
     fig.add_trace(go.Scatter(x=quantity, 
                              y=supply, 
                              mode='lines', 
                              name='Supply Curve', 
-                             line=dict(color='red'), 
+                             line=SUPPLY_LINE,
                              showlegend=False)
                             )
     
@@ -150,7 +118,7 @@ def update_graph_floor(floor_percent):
                              y=[mod.p_star], 
                              mode='markers', 
                              name='Initial Equilibrium', 
-                             marker=dict(color='green', size=15))
+                             marker=EQM_MARKER)
                             )
 
 
@@ -176,11 +144,12 @@ def update_graph_floor(floor_percent):
         go.Scatter(x=quantity, y=np.ones(len(quantity))*mod.p_min, 
                    mode='lines', 
                    name='Price floor', 
-                   line=dict(color='black'))
+                   line=POLICY_LINE)
     )
 
     # Update layout
-    fig.update_layout(title='Price floor', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
+    fig.update_layout(title='Price floor', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100],
+                      margin=dict(t=100))
     
     return fig, df.to_dict('records')
 
@@ -220,30 +189,21 @@ def update_graph_ceiling(ceiling):
     fig.add_trace(go.Scatter(
         x=[mod.q_ceiling, mod.q_star, mod.q_ceiling],
         y=[P_d, mod.p_star, mod.p_max],
-        fill='toself',
-        fillcolor='rgba(211, 211, 211, 1)',  # Light gray color for deadweight loss
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Deadweight Loss'
+        **area('Deadweight Loss', mod.DWL_ceiling, DWL_FILL)
     ))
 
     # Shade the area representing consumer surplus
     fig.add_trace(go.Scatter(
         x=[0, mod.q_ceiling, mod.q_ceiling, 0],
         y=[demand_intercept, P_d, mod.p_max, mod.p_max],
-        fill='toself',
-        fillcolor='rgba(0, 0, 255, 0.2)',  # Light blue color for consumer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Consumer Surplus'
+        **area('Consumer Surplus', mod.CS_ceiling, CS_FILL)
     ))
 
     # Shade the area representing producer surplus
     fig.add_trace(go.Scatter(
         x=[0, mod.q_ceiling, 0],
         y=[mod.p_max, mod.p_max, supply_intercept],
-        fill='toself',
-        fillcolor='rgba(255, 0, 0, 0.2)',  # Light red color for producer surplus
-        line=dict(color='rgba(255, 255, 255, 0)'),
-        name='Producer Surplus'
+        **area('Producer Surplus', mod.PS_ceiling, PS_FILL)
     ))
 
     # Add supply, demand lines
@@ -251,14 +211,14 @@ def update_graph_ceiling(ceiling):
                              y=demand, 
                              mode='lines', 
                              name='Demand Curve', 
-                             line=dict(color='blue'), 
+                             line=DEMAND_LINE,
                              showlegend=False)
                              )
     fig.add_trace(go.Scatter(x=quantity, 
                              y=supply, 
                              mode='lines', 
                              name='Supply Curve', 
-                             line=dict(color='red'), 
+                             line=SUPPLY_LINE,
                              showlegend=False)
                              )
     
@@ -267,7 +227,7 @@ def update_graph_ceiling(ceiling):
                              y=[mod.p_star], 
                              mode='markers', 
                              name='Initial Equilibrium', 
-                             marker=dict(color='green', size=15))
+                             marker=EQM_MARKER)
                              )
     
 
@@ -296,12 +256,13 @@ def update_graph_ceiling(ceiling):
         x=quantity, 
         y=np.ones(len(quantity)) * mod.p_max, 
         mode="lines", 
-        line=dict(color='gray'), 
+        line=POLICY_LINE,
         name="Price ceiling"
     ))
 
     # Update layout
-    fig.update_layout(title='Price ceiling', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100])
+    fig.update_layout(title='Price ceiling', xaxis_title='Quantity', yaxis_title='Price', yaxis_range=[0, 100],
+                      margin=dict(t=100))
     
     return fig, df.to_dict('records')
 

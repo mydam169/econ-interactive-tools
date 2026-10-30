@@ -175,7 +175,7 @@ class PriceFloor(LinearDSModel):
 class PriceCeiling(LinearDSModel):
     def  __init__(self, demand_intercept, demand_slope, supply_intercept, supply_slope, ceiling=None):
         super().__init__(demand_intercept, demand_slope, supply_intercept, supply_slope)
-        # self.p_max = ceiling * self.p_star
+        self.p_max = ceiling * self.p_star
 
     @property 
     def price_ceiling(self):
